@@ -2,6 +2,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GridSearchCV
 from wordcloud import WordCloud
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -14,7 +16,13 @@ nltk.download('punkt')
 nltk.download('stopwords')
 
 # load the dataset
-tweets_df = pd.read_csv('tweets_train.csv')
+tweets_df = pd.read_csv('./Datasets/tweets_train.csv')
+
+# check for missing values
+print(tweets_df.isnull().sum())
+
+# drop rows with missing values
+tweets_df.dropna(inplace=True)
 
 # remove quotes at the beginning and end of the text field
 tweets_df['text'] = tweets_df['text'].str.strip('\"')
@@ -93,12 +101,30 @@ y = tweets_df[target].map(label_mapping)
 # split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.2, random_state=42)
 
+# define hyperparameter grid
+param_grid = {'C': [0.001, 0.01, 0.1, 1, 10, 100]}
+
 # create and train a Logistic Regression model
-logistic_model = LogisticRegression()
-logistic_model.fit(X_train, y_train)
+logistic_model = LogisticRegression(max_iter=1000)
+
+# perform grid search
+grid_search = GridSearchCV(logistic_model, param_grid, cv=5, scoring='accuracy')
+grid_search.fit(X_tfidf, y)
+
+# get the best hyperparameter values
+best_C = grid_search.best_params_['C']
+
+# create Logistic Regression model with the best hyperparameter
+best_logistic_model = LogisticRegression(C=best_C, max_iter=800)
+best_logistic_model.fit(X_train, y_train)
 
 # predictions on the test set
-y_pred_logistic = logistic_model.predict(X_test)
+y_pred_logistic = best_logistic_model.predict(X_test)
+
+# cross validation
+cross_val_scores = cross_val_score(best_logistic_model, X_tfidf, y, cv=5, scoring='accuracy')
+print("Cross-Validation Scores:", cross_val_scores)
+print("Mean Cross-Validation Accuracy:", cross_val_scores.mean())
 
 # evaluate the Logistic Regression model
 accuracy_logistic = accuracy_score(y_test, y_pred_logistic)
@@ -119,7 +145,7 @@ user_input_cleaned = ' '.join([word.lower() for word in user_input_tokens if wor
 user_input_vectorized = tfidf_vectorizer.transform([user_input_cleaned])
 
 # prediction on the user input
-predicted_sentiment = logistic_model.predict(user_input_vectorized)
+predicted_sentiment = best_logistic_model.predict(user_input_vectorized)
 
 # define a mapping between numeric labels and text labels
 label_mapping_reverse = {1: 'positive', -1: 'negative', 0: 'neutral'}

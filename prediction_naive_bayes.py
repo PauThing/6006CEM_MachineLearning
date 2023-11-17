@@ -2,6 +2,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GridSearchCV
 from wordcloud import WordCloud
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -14,7 +16,13 @@ nltk.download('punkt')
 nltk.download('stopwords')
 
 # load the dataset
-tweets_df = pd.read_csv('Tweets.csv')
+tweets_df = pd.read_csv('./Datasets/tweets_train.csv')
+
+# check for missing values
+print(tweets_df.isnull().sum())
+
+# drop rows with missing values
+tweets_df.dropna(inplace=True)
 
 # remove quotes at the beginning and end of the text field
 tweets_df['text'] = tweets_df['text'].str.strip('\"')
@@ -93,12 +101,30 @@ y = tweets_df[target].map(label_mapping)
 # split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.2, random_state=42)
 
+# define hyperparameter grid
+param_grid = {'alpha': [0.001, 0.01, 0.1, 1, 10, 100]}
+
 # create and train a Naive Bayes (Multinomial) model
 naive_bayes_model = MultinomialNB()
-naive_bayes_model.fit(X_train, y_train)
+
+# perform grid search
+grid_search = GridSearchCV(naive_bayes_model, param_grid, cv=5, scoring='accuracy')
+grid_search.fit(X_tfidf, y)
+
+# get the best hyperparameter values
+best_alpha = grid_search.best_params_['alpha']
+
+# create Naive Bayes model with the best hyperparameter
+best_naive_bayes_model = MultinomialNB(alpha=best_alpha)
+best_naive_bayes_model.fit(X_train, y_train)
 
 # predictions on the test set
-y_pred_naive_bayes = naive_bayes_model.predict(X_test)
+y_pred_naive_bayes = best_naive_bayes_model.predict(X_test)
+
+# cross validation
+cross_val_scores = cross_val_score(best_naive_bayes_model, X_tfidf, y, cv=5, scoring='accuracy')
+print("Cross-Validation Scores:", cross_val_scores)
+print("Mean Cross-Validation Accuracy:", cross_val_scores.mean())
 
 # evaluate the Naive Bayes (Multinomial) model
 accuracy_naive_bayes = accuracy_score(y_test, y_pred_naive_bayes)
@@ -119,7 +145,7 @@ user_input_cleaned = ' '.join([word.lower() for word in user_input_tokens if wor
 user_input_vectorized = tfidf_vectorizer.transform([user_input_cleaned])
 
 # prediction on the user input
-predicted_sentiment = naive_bayes_model.predict(user_input_vectorized)
+predicted_sentiment = best_naive_bayes_model.predict(user_input_vectorized)
 
 # define a mapping between numeric labels and text labels
 label_mapping_reverse = {1: 'positive', -1: 'negative', 0: 'neutral'}
