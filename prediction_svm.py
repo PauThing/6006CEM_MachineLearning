@@ -1,5 +1,8 @@
+import nltk
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import cross_val_score
@@ -8,9 +11,6 @@ from wordcloud import WordCloud
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-import nltk
-import pandas as pd
-import matplotlib.pyplot as plt
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -96,36 +96,38 @@ y = tweets_df[target].map(label_mapping)
 X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.2, random_state=42)
 
 # define hyperparameter grid
-param_grid = {'alpha': [0.001, 0.01, 0.1, 1, 10, 100]}
+param_grid = {'C': [0.001, 0.01, 0.1, 1, 10, 100],
+              'kernel': ['linear', 'poly', 'rbf', 'sigmoid']}
 
-# create and train a Naive Bayes (Multinomial) model
-naive_bayes_model = MultinomialNB()
+# create a SVM model
+svm_model = SVC()
+svm_model.fit(X_train, y_train)
 
 # perform grid search
-grid_search = GridSearchCV(naive_bayes_model, param_grid, cv=5, scoring='accuracy')
-grid_search.fit(X_train, y_train)
+# grid_search = GridSearchCV(svm_model, param_grid, cv=5, scoring='accuracy')
+# grid_search.fit(X_train, y_train)
 
 # get the best hyperparameter values
-best_alpha = grid_search.best_params_['alpha']
+# best_params = grid_search.best_params_
 
-# create Naive Bayes model with the best hyperparameter
-best_naive_bayes_model = MultinomialNB(alpha=best_alpha)
-best_naive_bayes_model.fit(X_train, y_train)
+# create SVM model with the best hyperparameter
+# best_svm_model = SVC(**best_params)
+# best_svm_model.fit(X_train, y_train)
 
 # predictions on the test set
-y_pred_naive_bayes = best_naive_bayes_model.predict(X_test)
+y_pred_svm = svm_model.predict(X_test)
 
 # cross validation
-cross_val_scores = cross_val_score(best_naive_bayes_model, X_train, y_train, cv=5, scoring='accuracy')
+cross_val_scores = cross_val_score(svm_model, X_train, y_train, cv=5, scoring='accuracy')
 print("Cross-Validation Scores:", cross_val_scores)
 print("Mean Cross-Validation Accuracy:", cross_val_scores.mean())
 
-# evaluate the Naive Bayes (Multinomial) model
-accuracy_naive_bayes = accuracy_score(y_test, y_pred_naive_bayes)
-classification_report_naive_bayes = classification_report(y_test, y_pred_naive_bayes)
+# evaluate the SVM model
+accuracy_svm = accuracy_score(y_test, y_pred_svm)
+classification_report_svm = classification_report(y_test, y_pred_svm)
 
-print(f"Naive Bayes Accuracy: {accuracy_naive_bayes:.4f}")
-print("Naive Bayes Classification Report:\n", classification_report_naive_bayes)
+print(f"SVM Accuracy: {accuracy_svm:.4f}")
+print("SVM Classification Report:\n", classification_report_svm)
 
 # test with user input
 # user input
@@ -133,21 +135,13 @@ user_input = input("Enter a tweet: ")
 
 # preprocess the user input
 user_input_tokens = word_tokenize(user_input)
-
-stop_words = set(stopwords.words('english'))
-user_input_tokens = [word for word in user_input_tokens if word.lower() not in stop_words]
-
-stemmer = PorterStemmer()
-user_input_tokens = [stemmer.stem(word) for word in user_input_tokens]
-
-# join the processed tokens into a string
-user_input_cleaned = ' '.join(user_input_tokens)
+user_input_cleaned = ' '.join([word.lower() for word in user_input_tokens if word.isalpha()])
 
 # vectorize the user input using the same tfidf_vectorizer
 user_input_vectorized = tfidf_vectorizer.transform([user_input_cleaned])
 
 # prediction on the user input
-predicted_sentiment = best_naive_bayes_model.predict(user_input_vectorized)
+predicted_sentiment = svm_model.predict(user_input_vectorized)
 
 # define a mapping between numeric labels and text labels
 label_mapping_reverse = {1: 'positive', -1: 'negative', 0: 'neutral'}

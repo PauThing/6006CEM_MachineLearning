@@ -1,3 +1,6 @@
+import nltk
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -8,21 +11,12 @@ from wordcloud import WordCloud
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-import nltk
-import pandas as pd
-import matplotlib.pyplot as plt
 
 nltk.download('punkt')
 nltk.download('stopwords')
 
 # load the dataset
 tweets_df = pd.read_csv('./Datasets/tweets_train.csv')
-
-# check for missing values
-print(tweets_df.isnull().sum())
-
-# drop rows with missing values
-tweets_df.dropna(inplace=True)
 
 # remove quotes at the beginning and end of the text field
 tweets_df['text'] = tweets_df['text'].str.strip('\"')
@@ -109,7 +103,7 @@ logistic_model = LogisticRegression(max_iter=1000)
 
 # perform grid search
 grid_search = GridSearchCV(logistic_model, param_grid, cv=5, scoring='accuracy')
-grid_search.fit(X_tfidf, y)
+grid_search.fit(X_train, y_train)
 
 # get the best hyperparameter values
 best_C = grid_search.best_params_['C']
@@ -122,7 +116,7 @@ best_logistic_model.fit(X_train, y_train)
 y_pred_logistic = best_logistic_model.predict(X_test)
 
 # cross validation
-cross_val_scores = cross_val_score(best_logistic_model, X_tfidf, y, cv=5, scoring='accuracy')
+cross_val_scores = cross_val_score(best_logistic_model, X_train, y_train, cv=5, scoring='accuracy')
 print("Cross-Validation Scores:", cross_val_scores)
 print("Mean Cross-Validation Accuracy:", cross_val_scores.mean())
 
@@ -139,7 +133,15 @@ user_input = input("Enter a tweet: ")
 
 # preprocess the user input
 user_input_tokens = word_tokenize(user_input)
-user_input_cleaned = ' '.join([word.lower() for word in user_input_tokens if word.isalpha()])
+
+stop_words = set(stopwords.words('english'))
+user_input_tokens = [word for word in user_input_tokens if word.lower() not in stop_words]
+
+stemmer = PorterStemmer()
+user_input_tokens = [stemmer.stem(word) for word in user_input_tokens]
+
+# join the processed tokens into a string
+user_input_cleaned = ' '.join(user_input_tokens)
 
 # vectorize the user input using the same tfidf_vectorizer
 user_input_vectorized = tfidf_vectorizer.transform([user_input_cleaned])
