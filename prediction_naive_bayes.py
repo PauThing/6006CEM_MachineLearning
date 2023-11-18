@@ -1,3 +1,6 @@
+import nltk
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
@@ -8,9 +11,6 @@ from wordcloud import WordCloud
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-import nltk
-import pandas as pd
-import matplotlib.pyplot as plt
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -42,11 +42,11 @@ tweets_df['text_tokens'] = tweets_df['selected_text'].apply(word_tokenize)
 # create a TF-IDF vectorizer
 tfidf_vectorizer = TfidfVectorizer(max_features=10000, ngram_range=(1, 2))
 
-# remove common words that don't carry much meaning
+# remove common words that do not carry much meaning
 stop_words = set(stopwords.words('english'))
 tweets_df['text_tokens'] = tweets_df['text_tokens'].apply(lambda tokens: [word for word in tokens if word.lower() not in stop_words])
 
-# reduces words to their base or root form
+# reduce words to their base or root form
 stemmer = PorterStemmer()
 tweets_df['text_tokens'] = tweets_df['text_tokens'].apply(lambda tokens: [stemmer.stem(word) for word in tokens])
 
@@ -61,7 +61,7 @@ y = tweets_df[target].map(label_mapping)
 # text = " ".join(i for i in tweets_df[tweets_df[target]=='positive']['selected_text'])
 # wordcloud = WordCloud( background_color="white").generate(text)
 
-# plt.figure( figsize=(15,10))
+# plt.figure(figsize=(15,10))
 # plt.imshow(wordcloud, interpolation='bilinear')
 # plt.axis("off")
 # plt.title('wordcloud for positive words')
@@ -71,7 +71,7 @@ y = tweets_df[target].map(label_mapping)
 # text = " ".join(i for i in tweets_df[tweets_df[target]=='negative']['selected_text'])
 # wordcloud = WordCloud( background_color="white").generate(text)
 
-# plt.figure( figsize=(15,10))
+# plt.figure(figsize=(15,10))
 # plt.imshow(wordcloud, interpolation='bilinear')
 # plt.axis("off")
 # plt.title('wordcloud for negative words')
@@ -81,7 +81,7 @@ y = tweets_df[target].map(label_mapping)
 # text = " ".join(i for i in tweets_df[tweets_df[target]=='neutral']['selected_text'])
 # wordcloud = WordCloud( background_color="white").generate(text)
 
-# plt.figure( figsize=(15,10))
+# plt.figure(figsize=(15,10))
 # plt.imshow(wordcloud, interpolation='bilinear')
 # plt.axis("off")
 # plt.title('wordcloud for neutral words')
@@ -112,7 +112,7 @@ best_alpha = grid_search.best_params_['alpha']
 best_naive_bayes_model = MultinomialNB(alpha=best_alpha)
 best_naive_bayes_model.fit(X_train, y_train)
 
-# predictions on the test set
+# predict the test set
 y_pred_naive_bayes = best_naive_bayes_model.predict(X_test)
 
 # cross validation
@@ -146,7 +146,7 @@ user_input_cleaned = ' '.join(user_input_tokens)
 # vectorize the user input using the same tfidf_vectorizer
 user_input_vectorized = tfidf_vectorizer.transform([user_input_cleaned])
 
-# prediction on the user input
+# predict the user input
 predicted_sentiment = best_naive_bayes_model.predict(user_input_vectorized)
 
 # define a mapping between numeric labels and text labels
