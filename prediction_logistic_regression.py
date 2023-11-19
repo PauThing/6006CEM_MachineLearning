@@ -18,6 +18,9 @@ nltk.download('stopwords')
 # load the dataset
 tweets_df = pd.read_csv('./Datasets/tweets_train.csv')
 
+# assign the column name 'sentiment' to the variable
+target = 'sentiment'
+
 # explore the data
 # display summary statistics
 print(tweets_df.describe())
@@ -26,39 +29,39 @@ print(tweets_df.describe())
 print(tweets_df.isnull().sum())
 
 # display the positive words as WordCloud image
-# text = " ".join(i for i in tweets_df[tweets_df[target]=='positive']['selected_text'])
-# wordcloud = WordCloud( background_color="white").generate(text)
+text = " ".join(i for i in tweets_df[tweets_df[target]=='positive']['selected_text'])
+wordcloud = WordCloud( background_color="white").generate(text)
 
-# plt.figure(figsize=(15,10))
-# plt.imshow(wordcloud, interpolation='bilinear')
-# plt.axis("off")
-# plt.title('wordcloud for positive words')
-# plt.show()
+plt.figure(figsize=(15,10))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis("off")
+plt.title('WordCloud for Positive Words')
+plt.show()
 
 # display the negative words as WordCloud image
-# text = " ".join(i for i in tweets_df[tweets_df[target]=='negative']['selected_text'])
-# wordcloud = WordCloud( background_color="white").generate(text)
+text = " ".join(i for i in tweets_df[tweets_df[target]=='negative']['selected_text'])
+wordcloud = WordCloud( background_color="white").generate(text)
 
-# plt.figure(figsize=(15,10))
-# plt.imshow(wordcloud, interpolation='bilinear')
-# plt.axis("off")
-# plt.title('wordcloud for negative words')
-# plt.show()
+plt.figure(figsize=(15,10))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis("off")
+plt.title('WordCloud for Negative Words')
+plt.show()
 
 # display the neutral words as WordCloud image
-# text = " ".join(i for i in tweets_df[tweets_df[target]=='neutral']['selected_text'])
-# wordcloud = WordCloud( background_color="white").generate(text)
+text = " ".join(i for i in tweets_df[tweets_df[target]=='neutral']['selected_text'])
+wordcloud = WordCloud( background_color="white").generate(text)
 
-# plt.figure(figsize=(15,10))
-# plt.imshow(wordcloud, interpolation='bilinear')
-# plt.axis("off")
-# plt.title('wordcloud for neutral words')
-# plt.show()
+plt.figure(figsize=(15,10))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis("off")
+plt.title('Wordcloud for Neutral Words')
+plt.show()
 
 # overall distribution of positive, negative and neutral sentiments
-# plt.pie(tweets_df[target].value_counts(), labels=['Neutral','Positive','Negative'], counterclock=False, shadow=True, 
-#         explode=[0,0,0.08], autopct='%1.1f%%', radius=1, startangle=0)
-# plt.show()
+plt.pie(tweets_df[target].value_counts(), labels=['Neutral','Positive','Negative'], counterclock=False, shadow=True, 
+        explode=[0,0,0.08], autopct='%1.1f%%', radius=1, startangle=0)
+plt.show()
 
 # preprocess the data
 # remove quotes at the beginning and end of the text field
@@ -73,9 +76,6 @@ tweets_df.reset_index(drop=True, inplace=True)
 
 # create a deep copy of the DataFrame df 
 df = tweets_df.copy(deep=True)
-
-# assign the column name 'sentiment' to the variable
-target = 'sentiment'
 
 # split the text into individual words or tokens
 tweets_df['text_tokens'] = tweets_df['selected_text'].apply(word_tokenize)
