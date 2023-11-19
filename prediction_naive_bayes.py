@@ -59,14 +59,14 @@ plt.title('Wordcloud for Neutral Words')
 plt.show()
 
 # overall distribution of positive, negative and neutral sentiments
-plt.pie(tweets_df[target].value_counts(), labels=['Neutral','Positive','Negative'], counterclock=False, shadow=True, 
-        explode=[0,0,0.08], autopct='%1.1f%%', radius=1, startangle=0)
+plt.pie(tweets_df[target].value_counts(), labels=['Neutral','Positive','Negative'], counterclock=False, 
+        explode=[0,0,0], autopct='%1.1f%%', radius=1, startangle=0)
 plt.show()
 
 # preprocess the data
 # remove quotes at the beginning and end of the text field
-tweets_df['text'] = tweets_df['text'].str.strip('\"')
-tweets_df['selected_text'] = tweets_df['selected_text'].str.strip('\"')
+tweets_df['text'] = tweets_df['text'].str.strip(' "\"')
+tweets_df['selected_text'] = tweets_df['selected_text'].str.strip(' "\"')
 
 # drop the 'textID' and 'selected_text' columns
 tweets_df.drop(['textID'], axis=1, inplace=True)
@@ -140,7 +140,9 @@ print("Naive Bayes Classification Report:\n", classification_report_naive_bayes)
 user_input = input("Enter a tweet: ")
 
 # preprocess the user input
-user_input_tokens = word_tokenize(user_input)
+user_input_removed = user_input.strip(' "\"')
+
+user_input_tokens = word_tokenize(user_input_removed)
 
 stop_words = set(stopwords.words('english'))
 user_input_tokens = [word for word in user_input_tokens if word.lower() not in stop_words]
