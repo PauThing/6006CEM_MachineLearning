@@ -68,7 +68,7 @@ plt.show()
 tweets_df['text'] = tweets_df['text'].str.strip(' "\"')
 tweets_df['selected_text'] = tweets_df['selected_text'].str.strip(' "\"')
 
-# drop the 'textID' and 'selected_text' columns
+# drop the 'textID' column
 tweets_df.drop(['textID'], axis=1, inplace=True)
 
 # reset the index of DataFrame after dropping columns
