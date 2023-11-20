@@ -111,7 +111,7 @@ logistic_model = LogisticRegression(max_iter=1000)
 
 # perform grid search
 grid_search = GridSearchCV(logistic_model, param_grid, cv=5, scoring='accuracy')
-grid_search.fit(X_train, y_train)
+grid_search.fit(X_tfidf, y)
 
 # get the best hyperparameter values
 best_C = grid_search.best_params_['C']

@@ -111,7 +111,7 @@ naive_bayes_model = MultinomialNB()
 
 # perform grid search
 grid_search = GridSearchCV(naive_bayes_model, param_grid, cv=5, scoring='accuracy')
-grid_search.fit(X_train, y_train)
+grid_search.fit(X_tfidf, y)
 
 # get the best hyperparameter values
 best_alpha = grid_search.best_params_['alpha']
