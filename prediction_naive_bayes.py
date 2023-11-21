@@ -110,8 +110,8 @@ param_grid = {'alpha': [0.001, 0.01, 0.1, 1, 10, 100]}
 naive_bayes_model = MultinomialNB()
 
 # perform grid search
-grid_search = GridSearchCV(naive_bayes_model, param_grid, cv=5, scoring='accuracy')
-grid_search.fit(X_tfidf, y)
+grid_search = GridSearchCV(naive_bayes_model, param_grid, cv=10, scoring='accuracy')
+grid_search.fit(X_train, y_train)
 
 # get the best hyperparameter values
 best_alpha = grid_search.best_params_['alpha']
@@ -123,17 +123,17 @@ best_naive_bayes_model.fit(X_train, y_train)
 # predict the test set
 y_pred_naive_bayes = best_naive_bayes_model.predict(X_test)
 
-# cross validation
-cross_val_scores = cross_val_score(best_naive_bayes_model, X_train, y_train, cv=5, scoring='accuracy')
-print("Cross-Validation Scores:", cross_val_scores)
-print("Mean Cross-Validation Accuracy:", cross_val_scores.mean())
-
 # evaluate the Naive Bayes (Multinomial) model
 accuracy_naive_bayes = accuracy_score(y_test, y_pred_naive_bayes)
 classification_report_naive_bayes = classification_report(y_test, y_pred_naive_bayes)
 
 print(f"Naive Bayes Accuracy: {accuracy_naive_bayes:.4f}")
 print("Naive Bayes Classification Report:\n", classification_report_naive_bayes)
+
+# cross validation
+cross_val_scores = cross_val_score(best_naive_bayes_model, X_train, y_train, cv=10, scoring='accuracy')
+print("Cross-Validation Scores:", cross_val_scores)
+print("Mean Cross-Validation Accuracy:", cross_val_scores.mean())
 
 # test with user input
 # user input

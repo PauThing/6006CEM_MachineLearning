@@ -107,26 +107,21 @@ X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.2, r
 param_grid = {'C': [0.001, 0.01, 0.1, 1, 10, 100]}
 
 # create and train a Logistic Regression model
-logistic_model = LogisticRegression(max_iter=1000)
+logistic_model = LogisticRegression(max_iter=1000, multi_class="multinomial")
 
 # perform grid search
-grid_search = GridSearchCV(logistic_model, param_grid, cv=5, scoring='accuracy')
-grid_search.fit(X_tfidf, y)
+grid_search = GridSearchCV(logistic_model, param_grid, cv=10, scoring='accuracy')
+grid_search.fit(X_train, y_train)
 
 # get the best hyperparameter values
 best_C = grid_search.best_params_['C']
 
 # create Logistic Regression model with the best hyperparameter
-best_logistic_model = LogisticRegression(C=best_C, max_iter=800)
+best_logistic_model = LogisticRegression(C=best_C, max_iter=800, multi_class="multinomial")
 best_logistic_model.fit(X_train, y_train)
 
 # predict the test set
 y_pred_logistic = best_logistic_model.predict(X_test)
-
-# cross validation
-cross_val_scores = cross_val_score(best_logistic_model, X_train, y_train, cv=5, scoring='accuracy')
-print("Cross-Validation Scores:", cross_val_scores)
-print("Mean Cross-Validation Accuracy:", cross_val_scores.mean())
 
 # evaluate the Logistic Regression model
 accuracy_logistic = accuracy_score(y_test, y_pred_logistic)
@@ -134,6 +129,11 @@ classification_report_logistic = classification_report(y_test, y_pred_logistic)
 
 print(f"Logistic Regression Accuracy: {accuracy_logistic:.4f}")
 print("Logistic Regression Classification Report:\n", classification_report_logistic)
+
+# cross validation
+cross_val_scores = cross_val_score(best_logistic_model, X_train, y_train, cv=10, scoring='accuracy')
+print("Cross-Validation Scores:", cross_val_scores)
+print("Mean Cross-Validation Accuracy:", cross_val_scores.mean())
 
 # test with user input
 # user input
